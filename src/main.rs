@@ -4,14 +4,13 @@ use crossterm::{
     event::{Event, KeyCode, KeyEventKind, read},
 };
 use std::{
-    io::{self, Write, stdout},
-    process::exit,
+    fs::File, io::{self, Write, stdout}, process::{exit}
 };
 
 enum Modes {
     Normal,
     Insert,
-    GoTo
+    //GoTo
 }
 
 struct App {
@@ -49,15 +48,22 @@ fn main() -> io::Result<()> {
                     if key_event.kind == KeyEventKind::Press {
                         match key_event.code {
                             KeyCode::Esc       => { app.mode = Modes::Normal; stdout.flush()?; },
-                            KeyCode::Char(' ') => { print!(" "); stdout.flush()?; },
+                            KeyCode::Char(' ') => { 
+                                print!(" "); stdout.flush()?; 
+                            },
                             KeyCode::Backspace => { 
                                 stdout.queue(MoveLeft(1))?;
                                 print!(" ");
                                 stdout.queue(MoveLeft(1))?;
                                 stdout.flush()?;
                             },
-                            KeyCode::Enter => { print!("\n"); stdout.flush()?; }
+                            KeyCode::Enter => {  
+                                print!("\n"); stdout.flush()?; 
+                            }
                             _ => {
+                                let char = key_event.code;
+                                let mut file = File::open("./teste.txt")?;
+                                file.write_all(&char.to_string().as_bytes())?;
                                 //Pegar um arquivo e colocar o dado nele
                                 print!("{}", key_event.code); stdout.flush()?; 
                             }
@@ -66,9 +72,9 @@ fn main() -> io::Result<()> {
                 }
                 _ => {}
             },
-            Modes::GoTo => {
+            // Modes::GoTo => {
 
-            }
+            // }
         }
     }
 }
