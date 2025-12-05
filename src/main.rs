@@ -4,9 +4,11 @@ use crossterm::{
     event::{Event, KeyCode, KeyEventKind, read},
 };
 use std::{
-    fs::File, io::{self, Write, stdout}, process::{exit}
+    fs::{OpenOptions}, io::{self, Write, stdout}, process::exit
 };
 
+
+static FILE_PATH: &str = "./teste.txt";
 enum Modes {
     Normal,
     Insert,
@@ -19,7 +21,7 @@ struct App {
 
 fn main() -> io::Result<()> {
     //Poderia aceitar argumentos do user de qual file usar
-
+    let mut text_to_be_saved: String = String::new();
 
     let mut stdout = stdout();
     let mut app = App { mode: Modes::Normal };
@@ -29,14 +31,23 @@ fn main() -> io::Result<()> {
                 Event::Key(key_event) => {
                     if key_event.kind == KeyEventKind::Press {
                         match key_event.code {
-                            KeyCode::Char('q') => exit(0),
+                            KeyCode::Char('q') => {
+                                //lidar com salvar no arquivo
+                                let mut file = OpenOptions::new()
+                                .append(true)
+                                .open(FILE_PATH)
+                                .expect("ERROR OPEN FILE");
+                                file.write(text_to_be_saved.as_bytes()).expect("ERROR SAVING");
+                                // _ = fs::write(FILE_PATH, text_to_be_saved.as_bytes());
+                                
+                                exit(0);
+                            },
                             KeyCode::Char('h') => { stdout.queue(MoveLeft(1))?;     stdout.flush()?; }
                             KeyCode::Char('j') => { stdout.queue(MoveDown(1))?;     stdout.flush()?; }
                             KeyCode::Char('k') => { stdout.queue(MoveUp(1))?;       stdout.flush()?; }
                             KeyCode::Char('l') => { stdout.queue(MoveRight(1))?;    stdout.flush()?; }
                             KeyCode::Char('i') => { app.mode = Modes::Insert;               stdout.flush()?; }
                             KeyCode::Char('o') => { print!("\n"); app.mode = Modes::Insert; stdout.flush()?; }
-                            KeyCode::Char('g') => { }
                             _                  => {}
                         }
                     }
@@ -48,7 +59,8 @@ fn main() -> io::Result<()> {
                     if key_event.kind == KeyEventKind::Press {
                         match key_event.code {
                             KeyCode::Esc       => { app.mode = Modes::Normal; stdout.flush()?; },
-                            KeyCode::Char(' ') => { 
+                            KeyCode::Char(' ') => {
+                                text_to_be_saved.push(' ');
                                 print!(" "); stdout.flush()?; 
                             },
                             KeyCode::Backspace => { 
@@ -58,13 +70,11 @@ fn main() -> io::Result<()> {
                                 stdout.flush()?;
                             },
                             KeyCode::Enter => {  
+                                text_to_be_saved.push('\n');
                                 print!("\n"); stdout.flush()?; 
                             }
                             _ => {
-                                let char = key_event.code;
-                                let mut file = File::open("./teste.txt")?;
-                                file.write_all(&char.to_string().as_bytes())?;
-                                //Pegar um arquivo e colocar o dado nele
+                                text_to_be_saved.push(key_event.code.as_char().expect("ERROR"));
                                 print!("{}", key_event.code); stdout.flush()?; 
                             }
                         }
