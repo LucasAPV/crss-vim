@@ -4,9 +4,10 @@ use crossterm::{
     event::{Event, KeyCode, KeyEventKind, read},
 };
 use std::{
-    fs::{OpenOptions}, io::{self, Write, stdout}, process::exit
+    fs::OpenOptions,
+    io::{self, Write, stdout},
+    process::exit,
 };
-
 
 static FILE_PATH: &str = "./teste.txt";
 enum Modes {
@@ -24,7 +25,9 @@ fn main() -> io::Result<()> {
     let mut text_to_be_saved: String = String::new();
 
     let mut stdout = stdout();
-    let mut app = App { mode: Modes::Normal };
+    let mut app = App {
+        mode: Modes::Normal,
+    };
     loop {
         match app.mode {
             Modes::Normal => match read()? {
@@ -34,21 +37,41 @@ fn main() -> io::Result<()> {
                             KeyCode::Char('q') => {
                                 //lidar com salvar no arquivo
                                 let mut file = OpenOptions::new()
-                                .append(true)
-                                .open(FILE_PATH)
-                                .expect("ERROR OPEN FILE");
-                                file.write(text_to_be_saved.as_bytes()).expect("ERROR SAVING");
+                                    .append(true)
+                                    .open(FILE_PATH)
+                                    .expect("ERROR OPEN FILE");
+                                file.write(text_to_be_saved.as_bytes())
+                                    .expect("ERROR SAVING");
                                 // _ = fs::write(FILE_PATH, text_to_be_saved.as_bytes());
-                                
+
                                 exit(0);
-                            },
-                            KeyCode::Char('h') => { stdout.queue(MoveLeft(1))?;     stdout.flush()?; }
-                            KeyCode::Char('j') => { stdout.queue(MoveDown(1))?;     stdout.flush()?; }
-                            KeyCode::Char('k') => { stdout.queue(MoveUp(1))?;       stdout.flush()?; }
-                            KeyCode::Char('l') => { stdout.queue(MoveRight(1))?;    stdout.flush()?; }
-                            KeyCode::Char('i') => { app.mode = Modes::Insert;               stdout.flush()?; }
-                            KeyCode::Char('o') => { print!("\n"); app.mode = Modes::Insert; stdout.flush()?; }
-                            _                  => {}
+                            }
+                            KeyCode::Char('h') => {
+                                stdout.queue(MoveLeft(1))?;
+                                stdout.flush()?;
+                            }
+                            KeyCode::Char('j') => {
+                                stdout.queue(MoveDown(1))?;
+                                stdout.flush()?;
+                            }
+                            KeyCode::Char('k') => {
+                                stdout.queue(MoveUp(1))?;
+                                stdout.flush()?;
+                            }
+                            KeyCode::Char('l') => {
+                                stdout.queue(MoveRight(1))?;
+                                stdout.flush()?;
+                            }
+                            KeyCode::Char('i') => {
+                                app.mode = Modes::Insert;
+                                stdout.flush()?;
+                            }
+                            KeyCode::Char('o') => {
+                                print!("\n");
+                                app.mode = Modes::Insert;
+                                stdout.flush()?;
+                            }
+                            _ => {}
                         }
                     }
                 }
@@ -58,33 +81,36 @@ fn main() -> io::Result<()> {
                 Event::Key(key_event) => {
                     if key_event.kind == KeyEventKind::Press {
                         match key_event.code {
-                            KeyCode::Esc       => { app.mode = Modes::Normal; stdout.flush()?; },
+                            KeyCode::Esc => {
+                                app.mode = Modes::Normal;
+                                stdout.flush()?;
+                            }
                             KeyCode::Char(' ') => {
                                 text_to_be_saved.push(' ');
-                                print!(" "); stdout.flush()?; 
-                            },
-                            KeyCode::Backspace => { 
+                                print!(" ");
+                                stdout.flush()?;
+                            }
+                            KeyCode::Backspace => {
                                 stdout.queue(MoveLeft(1))?;
                                 print!(" ");
                                 stdout.queue(MoveLeft(1))?;
                                 stdout.flush()?;
-                            },
-                            KeyCode::Enter => {  
+                            }
+                            KeyCode::Enter => {
                                 text_to_be_saved.push('\n');
-                                print!("\n"); stdout.flush()?; 
+                                print!("\n");
+                                stdout.flush()?;
                             }
                             _ => {
                                 text_to_be_saved.push(key_event.code.as_char().expect("ERROR"));
-                                print!("{}", key_event.code); stdout.flush()?; 
+                                print!("{}", key_event.code);
+                                stdout.flush()?;
                             }
                         }
                     }
                 }
                 _ => {}
             },
-            // Modes::GoTo => {
-
-            // }
         }
     }
 }
