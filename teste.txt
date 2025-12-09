@@ -1,1 +1,11 @@
-ooooooooaaaaaoooooooooooookkkkjhkhlkhjlhklhjk
+ola mundo
+int main(){
+assasasasafdgffddfgd
+iuiroupuiopuiu
+
+
+int main () {}int a}
+
+int main(){
+  int a
+}
