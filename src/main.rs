@@ -17,17 +17,26 @@ fn main() -> io::Result<()> {
     let mut text = Text::new();
     let s = text.retrive(FILE_PATH.to_string());
     let mut stdout = stdout();
+
     let mut app = application {
         mode: Modes::Normal,
-        line: 0,
-        col: 0
+        row: 0,
+        col: 0,
     };
 
-    stdout.queue(Clear(ClearType::All)).unwrap();
+    stdout.queue(Clear(ClearType::All))?;
     stdout.flush()?;
-    if s.value != "".to_string() {
-        println!("{}", s.value);
-        stdout.flush()?;
+
+    stdout.queue(MoveTo(0u16,0u16)).unwrap();
+    stdout.flush()?;
+
+    if !s.lines.is_empty() {
+        for line in s.lines {
+            if line != "".to_string(){
+                print!("{}", line);
+            }
+            stdout.flush()?;
+        }
     }
     stdout.queue(MoveTo(0u16,0u16)).unwrap();
     stdout.flush()?;
@@ -36,7 +45,6 @@ fn main() -> io::Result<()> {
             Modes::Normal => match read()? {
                 Event::Key(key_event) => {
                     if key_event.kind == KeyEventKind::Press {
-                        text.value =
                             application::
                                 handle_normal_input
                                     (
